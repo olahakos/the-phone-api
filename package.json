@@ -1,0 +1,17 @@
+{
+  "name": "the-phone-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "onoff": "^3.2.2",
+    "play-sound": "^1.1.2",
+    "tree-kill": "^1.2.1"
+  }
+}
