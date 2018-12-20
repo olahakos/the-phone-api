@@ -15,7 +15,7 @@ const button = new Gpio(4, 'in', 'both');
 
 const init = () => {
 	distence.init();
-	distence.start();
+//	distence.start();
 }
 
 let phoneStatus = false;
@@ -27,17 +27,26 @@ app.use(function(req, res, next) {
 	  next();
 });
 
-app.get('/', (req, res) => {
-	try {
-		const d = distence.getDistence();
-		if (d < 10 || d > 1000) {
-			phoneStatus = false;
+const calculateDistence = () => {
+	const d = distence.getDistence();
+	if (d<2) return phoneStatus;
+
+	if (d < 6 || d > 1000) {
+		if (audio) {
 			kill(audio.pid);
 			audio = null;
-		} else {
-			phoneStatus = true;
-			if(!audio) audio = spawn('omxplayer', ['assets/SampleAudio_0.4mb.mp3']);
 		}
+		return false;
+	}
+		
+	if(!audio) audio = spawn('omxplayer', ['/home/pi/Documents/projects/the-phone-api/assets/SampleAudio_0.4mb.mp3']);
+	return true;
+};
+
+app.get('/', (req, res) => {
+	try {
+		phoneStatus = calculateDistence();
+//		console.log('phoneStatus', phoneStatus);
 	} catch (e) {
 		console.log('something went wrong', e);
 	}

@@ -1,4 +1,5 @@
-const Gpio = require('pigpio').Gpio;
+const pigpio = require('pigpio');
+const Gpio = pigpio.Gpio;
 
 // The number of microseconds it takes sound to travel 1cm at 20 degrees celcius
 const MICROSECDONDS_PER_CM = 1e6/34321;
@@ -9,6 +10,8 @@ const echo = new Gpio(18, {mode: Gpio.INPUT, alert: true});
 let inter = null;
 let distence = 0;
 
+let last = 4;
+
 const watchHCSR04 = () => {
 	let startTick;
 
@@ -18,8 +21,11 @@ const watchHCSR04 = () => {
 		} else {
 			const endTick = tick;
 			const diff = (endTick >> 0) - (startTick >> 0); // Unsigned 32 bit arithmetic
-			// console.log(diff / 2 / MICROSECDONDS_PER_CM);
-			distence = diff / 2 / MICROSECDONDS_PER_CM; 
+			let nd = diff / 2 / MICROSECDONDS_PER_CM;
+			if (nd < 1 || nd > 1000) return;
+//			console.log(nd);
+			distence = nd;
+			last = nd;
 		}
 	});
 };
@@ -28,17 +34,22 @@ const watchHCSR04 = () => {
 const init = () => {
 	console.log('distence init');
 	trigger.digitalWrite(0); // Make sure trigger is low
+	triggering();
 	watchHCSR04();
 };
 
-const start = (interval = 500) => {
-	inter = setInterval(() => {
-		  trigger.trigger(10, 1); // Set trigger high for 10 microseconds
-	}, interval);
+const triggering = () => {
+	trigger.trigger(10, 1); // Set trigger high for 10 microseconds
+	setTimeout(triggering, 500);
 }
 
-const stop = () => {
-	clearInterval(inter);
+const start = (interval = 500) => {
+	triggering();
+/** /
+	inter = setInterval(() => {
+		  trigger.trigger(10, 1); // Set trigger high for 10 microseconds
+	}, interval)
+/**/
 }
 
 const getDistence = () => {
@@ -48,7 +59,5 @@ const getDistence = () => {
 module.exports = {
 	init,
 	start,
-	stop,
 	getDistence,
-
 }
